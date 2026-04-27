@@ -24,41 +24,41 @@ app.get('/privacy-policy.html', (req, res) => res.sendFile(path.join(__dirname, 
 
 // API Route for Pinterest Video & Image Download
 app.post('/api/download', async (req, res) => {
-    const { url } = req.body;
+  try {
+    console.log("Incoming body:", req.body);
 
-    if (!url || !url.includes('pinterest.com')) {
-        return res.status(400).json({ success: false, error: 'Invalid Pinterest URL provided.' });
+    const url = req.body.url || req.body.link || req.body.pinterestUrl;
+
+    if (!url) {
+      return res.status(400).json({ error: "No URL provided" });
     }
 
-    try {
-        const response = await axios.get('https://pinterest-video-and-image-downloader.p.rapidapi.com/pinterest', {
-            params: { url: url },
-            headers: {
-                'Content-Type': 'application/json',
-                'x-rapidapi-host': 'pinterest-video-and-image-downloader.p.rapidapi.com',
-                'x-rapidapi-key': process.env.RAPIDAPI_KEY
-            },
-            timeout: 5000
-        });
+    if (!url.includes("pinterest.com")) {
+      return res.status(400).json({ error: "Invalid Pinterest URL provided" });
+    }
 
-        const data = response.data;
+    const encodedUrl = encodeURIComponent(url);
 
-        // Check response structure based on the specific API
-        if (data && data.video) {
-            return res.json({ success: true, type: 'video', media: data.video });
-        } else if (data && data.image) {
-            return res.json({ success: true, type: 'image', media: data.image });
-        } else {
-            return res.status(404).json({ success: false, error: 'no media found' });
+    const axios = require('axios');
+
+    const response = await axios.get(
+      `https://pinterest-video-and-image-downloader.p.rapidapi.com/pinterest?url=${encodedUrl}`,
+      {
+        headers: {
+          "x-rapidapi-key": process.env.RAPIDAPI_KEY,
+          "x-rapidapi-host": "pinterest-video-and-image-downloader.p.rapidapi.com"
         }
+      }
+    );
 
-    } catch (error) {
-        console.error('Download Error:', error.message);
-        return res.status(500).json({ 
-            success: false, 
-            error: 'API failure or invalid response' 
-        });
-    }
+    console.log("API Response:", response.data);
+
+    res.json(response.data);
+
+  } catch (error) {
+    console.error("ERROR:", error.response?.data || error.message);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 // Serve index.html for root

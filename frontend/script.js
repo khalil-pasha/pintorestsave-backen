@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!url) return;
 
         // Simple validation
-        if (!url.includes('pinterest.com') && !url.includes('pin.it')) {
+        if (!url.includes('pinterest.com')) {
             showError('Please enter a valid Pinterest URL.');
             return;
         }
@@ -25,10 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingDiv.classList.remove('hidden');
 
         try {
-            // NOTE: In local development, the frontend and backend are usually on the same server,
-            // so we can use a relative path like '/api/download'. 
-            // If the backend is hosted separately on Render and the frontend on Hostinger,
-            // change this to your Render URL: e.g. 'https://your-backend.onrender.com/api/download'
             const apiUrl = 'https://pintorestsave-backen.onrender.com/api/download'; 
 
             const response = await fetch(apiUrl, {
@@ -43,10 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             loadingDiv.classList.add('hidden');
 
-            if (data.success) {
+            if (data.video || data.image || data.success) {
+                // In case the backend returns raw RapidAPI data directly without 'type'
+                if (data.video && !data.type) data.type = 'video';
+                if (data.image && !data.type) data.type = 'image';
                 showResult(data);
             } else {
-                showError(data.error || 'Failed to extract media.');
+                showError(data.error || data.message || 'Failed to extract media.');
             }
 
         } catch (error) {
