@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // so we can use a relative path like '/api/download'. 
             // If the backend is hosted separately on Render and the frontend on Hostinger,
             // change this to your Render URL: e.g. 'https://your-backend.onrender.com/api/download'
-            const apiUrl = '/api/download'; 
+            const apiUrl = 'https://pintorestsave-backen.onrender.com/api/download'; 
 
             const response = await fetch(apiUrl, {
                 method: 'POST',
