@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!url) return;
 
         // Simple validation
-        if (!url.includes('pinterest.com')) {
-            showError('Please enter a valid Pinterest URL.');
+        if (!url.includes('pinterest.com') && !url.includes('pin.it') && !url.includes('pinterest.co')) {
+            showError('Invalid URL. Please enter a valid Pinterest link.');
             return;
         }
 
@@ -36,45 +36,45 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await response.json();
+            console.log("FULL API DATA:", data);
 
             loadingDiv.classList.add('hidden');
 
-            if (data.video || data.image || data.success) {
-                // In case the backend returns raw RapidAPI data directly without 'type'
-                if (data.video && !data.type) data.type = 'video';
-                if (data.image && !data.type) data.type = 'image';
-                showResult(data);
+            // Add proper error handling for backend API failures
+            if (!response.ok || data.error || data.success === false) {
+                showError(data.error || 'Server error. Failed to extract media.');
+                return;
+            }
+
+            // Extract video and image based on the explicit response schema
+            const videoUrl = data.video || null;
+            const imageUrl = data.image || null;
+
+            // Display result dynamically handling video vs image correctly
+            if (videoUrl) {
+                resultSection.innerHTML = `
+                    <video id="videoPreview" src="${videoUrl}" controls class="media-preview" autoplay style="display:block;"></video>
+                    <br>
+                    <a id="downloadBtn" href="${videoUrl}" download="${data.filename || "video.mp4"}" target="_blank" class="download-action-btn">Download Video</a>
+                `;
+                resultSection.classList.remove('hidden');
+            } else if (imageUrl) {
+                resultSection.innerHTML = `
+                    <img id="videoPreview" src="${imageUrl}" alt="Pinterest Image" class="media-preview" style="display:block;">
+                    <br>
+                    <a id="downloadBtn" href="${imageUrl}" download="${data.filename || "image.jpg"}" target="_blank" class="download-action-btn">Download Image</a>
+                `;
+                resultSection.classList.remove('hidden');
             } else {
-                showError(data.error || data.message || 'Failed to extract media.');
+                showError("Media not found!");
             }
 
         } catch (error) {
             loadingDiv.classList.add('hidden');
-            showError('Network error. Please make sure the server is running and try again.');
+            showError('Server error. Please make sure the server is running and try again.');
             console.error('Fetch Error:', error);
         }
     });
-
-    function showResult(data) {
-        resultSection.classList.remove('hidden');
-        
-        let mediaHtml = '';
-        if (data.type === 'video') {
-            mediaHtml = `
-                <video src="${data.media}" controls class="media-preview" autoplay></video>
-                <br>
-                <a href="${data.media}" target="_blank" download class="download-action-btn">Download Video HD</a>
-            `;
-        } else if (data.type === 'image') {
-            mediaHtml = `
-                <img src="${data.media}" alt="Pinterest Image" class="media-preview">
-                <br>
-                <a href="${data.media}" target="_blank" download class="download-action-btn">Download Image HD</a>
-            `;
-        }
-        
-        resultSection.innerHTML = mediaHtml;
-    }
 
     function showError(msg) {
         errorMessage.textContent = msg;

@@ -27,13 +27,19 @@ app.post('/api/download', async (req, res) => {
   try {
     console.log("Incoming body:", req.body);
 
-    const url = req.body.url || req.body.link || req.body.pinterestUrl;
+    let url = req.body.url || req.body.link || req.body.pinterestUrl;
 
     if (!url) {
       return res.status(400).json({ error: "No URL provided" });
     }
 
-    if (!url.includes("pinterest.com")) {
+    if (url.includes('pin.it')) {
+      const axios = require('axios');
+      const response = await axios.get(url, { maxRedirects: 5 });
+      url = response.request.res.responseUrl;
+    }
+
+    if (!url.includes("pinterest.com/pin/")) {
       return res.status(400).json({ error: "Invalid Pinterest URL provided" });
     }
 
