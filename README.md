@@ -1,6 +1,6 @@
-# PintorestSave - Pinterest Video & Image Downloader
+# Pinterest Save - Pinterest Video & Image Downloader
 
-PintorestSave is a robust, full-stack application built to effortlessly download high-quality videos, images, and GIFs from Pinterest. Designed for speed, security, and a seamless user experience across all devices.
+Pinterest Save is a robust, full-stack application built to effortlessly download high-quality videos, images, and GIFs from Pinterest. Designed for speed, security, and a seamless user experience across all devices.
 
 ## Features
 - **High-Quality Downloads**: Download Pinterest media in highest available quality (up to 4K for supported videos).
