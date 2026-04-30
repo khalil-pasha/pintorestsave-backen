@@ -6,7 +6,7 @@ const axios = require('axios');
 
 async function fetchFromApify(url) {
   try {
-    const token = process.env.APIFY_TOKEN || "API KEY";
+    const token = process.env.APIFY_TOKEN || "token=process.env.APIFY_TOKEN";
     const response = await axios.post(
       `https://api.apify.com/v2/acts/igview-owner~pinterest-downloader/run-sync-get-dataset-items?token=${token}`,
       {
