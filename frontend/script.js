@@ -51,7 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const imageUrl = data.image || null;
 
             // Display result dynamically handling video vs image correctly
+            const mediaUrl = data.video || data.image;
             console.log("API Response:", data);
+            console.log("Media URL:", mediaUrl);
             
             if (data.video && data.video.includes(".mp4") || data.image) {
                 resultSection.innerHTML = `
@@ -66,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 
     <div class="preview-right">
-        <button class="download-btn" data-url="${data.video || data.image}">
+        <button class="download-btn" data-url="${mediaUrl}">
             Download ${data.video ? "Video" : "Image"}
         </button>
     </div>
@@ -95,12 +97,21 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.textContent = '';
     }
 
-    // Download Button Proxy Redirect
+    const backendUrl = "https://pintorestsave-backen.onrender.com";
+
     document.addEventListener("click", function(e) {
         if (e.target.classList.contains("download-btn")) {
-            e.preventDefault();
-            const mediaUrl = e.target.getAttribute("data-url");
-            window.location.href = `https://pintorestsave-backen.onrender.com/api/file?url=${encodeURIComponent(mediaUrl)}`;
+
+            const fileUrl = e.target.getAttribute("data-url");
+
+            if (!fileUrl) {
+                alert("Download failed");
+                return;
+            }
+
+            console.log("Downloading from:", fileUrl);
+
+            window.location.href = `${backendUrl}/api/file?url=${encodeURIComponent(fileUrl)}`;
         }
     });
 

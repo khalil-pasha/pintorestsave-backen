@@ -217,8 +217,6 @@ app.get('/api/file', async (req, res) => {
       return res.status(400).send("No URL provided");
     }
 
-    const axios = require('axios');
-
     const response = await axios({
       url: fileUrl,
       method: 'GET',
@@ -231,7 +229,7 @@ app.get('/api/file', async (req, res) => {
     response.data.pipe(res);
 
   } catch (error) {
-    console.error("Download proxy error:", error.message);
+    console.error("Proxy Download Error:", error.message);
     res.status(500).send("Download failed");
   }
 });
