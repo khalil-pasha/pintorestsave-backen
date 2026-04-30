@@ -8,11 +8,20 @@ function extractMedia(apiData) {
   let video = null;
   let image = null;
 
-  // Direct fields
-  video = apiData?.video || apiData?.videoUrl || apiData?.video_url;
-  image = apiData?.image || apiData?.imageUrl || apiData?.image_url;
+  // RapidAPI format (MOST IMPORTANT FIX)
+  if (apiData?.data?.url) {
+    video = apiData.data.url;
+  }
 
-  // Nested data
+  if (apiData?.data?.thumbnail) {
+    image = apiData.data.thumbnail;
+  }
+
+  // Other fallback formats
+  video = video || apiData?.video || apiData?.videoUrl || apiData?.video_url;
+  image = image || apiData?.image || apiData?.imageUrl || apiData?.image_url;
+
+  // Nested fallback
   if (!video && apiData?.data) {
     video = apiData.data.video || apiData.data.videoUrl;
     image = apiData.data.image || apiData.data.imageUrl;
@@ -25,15 +34,6 @@ function extractMedia(apiData) {
 
   if (!image && apiData?.images?.length) {
     image = apiData.images[0]?.url || apiData.images[0];
-  }
-
-  // Apify specific
-  if (!video && apiData?.videoUrl) {
-    video = apiData.videoUrl;
-  }
-
-  if (!image && apiData?.imageUrl) {
-    image = apiData.imageUrl;
   }
 
   return { video, image };
