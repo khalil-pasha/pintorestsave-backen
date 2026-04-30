@@ -223,8 +223,21 @@ app.get('/api/file', async (req, res) => {
       responseType: 'stream'
     });
 
-    res.setHeader('Content-Disposition', 'attachment; filename=download');
-    res.setHeader('Content-Type', response.headers['content-type']);
+    const contentType = response.headers['content-type'];
+
+    let extension = 'file';
+
+    if (contentType.includes('video')) {
+      extension = 'mp4';
+    } else if (contentType.includes('image')) {
+      extension = 'jpg';
+    }
+
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=download.${extension}`
+    );
+    res.setHeader('Content-Type', contentType);
 
     response.data.pipe(res);
 
