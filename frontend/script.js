@@ -53,20 +53,25 @@ document.addEventListener('DOMContentLoaded', () => {
             // Display result dynamically handling video vs image correctly
             console.log("API Response:", data);
             
-            if (data.video && data.video.includes(".mp4")) {
+            if (data.video && data.video.includes(".mp4") || data.image) {
                 resultSection.innerHTML = `
-                    <video controls src="${data.video}" style="max-width:100%"></video>
-                    <a href="${data.video}" download="${data.filename || 'video.mp4'}">
-                        <button>Download Video</button>
-                    </a>
-                `;
-                resultSection.classList.remove('hidden');
-            } else if (data.image) {
-                resultSection.innerHTML = `
-                    <img src="${data.image}" style="max-width:100%" />
-                    <a href="${data.image}" download="image.jpg">
-                        <button>Download Image</button>
-                    </a>
+<div class="preview-container">
+    
+    <div class="preview-left">
+        ${data.video && data.video.includes(".mp4") ? `
+            <video src="${data.video}" controls autoplay muted loop playsinline class="media-preview"></video>
+        ` : `
+            <img src="${data.image}" class="media-preview"/>
+        `}
+    </div>
+
+    <div class="preview-right">
+        <a href="${data.video && data.video.includes(".mp4") ? data.video : data.image}" download target="_self" class="download-btn">
+            Download ${data.video && data.video.includes(".mp4") ? "Video" : "Image"}
+        </a>
+    </div>
+
+</div>
                 `;
                 resultSection.classList.remove('hidden');
             } else {
@@ -89,6 +94,22 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.classList.add('hidden');
         errorMessage.textContent = '';
     }
+
+    // Download Button Redirect Prevention
+    document.addEventListener("click", function(e) {
+        if (e.target.classList.contains("download-btn")) {
+            e.preventDefault();
+
+            const url = e.target.getAttribute("href");
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    });
 
     // Accordion Logic
     const accordionHeaders = document.querySelectorAll('.accordion-header');
