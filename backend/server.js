@@ -220,7 +220,11 @@ app.get('/api/file', async (req, res) => {
     const response = await axios({
       url: fileUrl,
       method: 'GET',
-      responseType: 'stream'
+      responseType: 'stream',
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Referer': 'https://www.pinterest.com/'
+      }
     });
 
     const contentType = response.headers['content-type'];
