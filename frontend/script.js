@@ -58,12 +58,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     <a id="downloadBtn" href="${videoUrl}" download="${data.filename || "video.mp4"}" target="_blank" class="download-action-btn">Download Video</a>
                 `;
                 resultSection.classList.remove('hidden');
-            } else if (imageUrl) {
+            } else if (data.image) {
                 resultSection.innerHTML = `
-                    <img id="videoPreview" src="${imageUrl}" alt="Pinterest Image" class="media-preview" style="display:block;">
-                    <br>
-                    <a id="downloadBtn" href="${imageUrl}" download="${data.filename || "image.jpg"}" target="_blank" class="download-action-btn">Download Image</a>
-                `;
+    <div class="result-card">
+      <img src="${data.image}" alt="Pinterest Image" style="width:100%; max-width:400px; border-radius:12px; margin-top:10px;" 
+           onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Preview+Not+Available';" />
+      <br/>
+      <a href="${data.image}" download="pinterest-image.jpg" class="download-btn">Download Image</a>
+    </div>
+  `;
                 resultSection.classList.remove('hidden');
             } else {
                 showError("Media not found!");
