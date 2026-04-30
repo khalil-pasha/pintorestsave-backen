@@ -126,7 +126,9 @@ app.post('/api/download', async (req, res) => {
         }
       );
       apiData = response.data || {};
-      console.log("API Response Data:", JSON.stringify(apiData).substring(0, 300) + "...");
+      console.log("===== FULL API RESPONSE START =====");
+      console.log(JSON.stringify(apiData, null, 2));
+      console.log("===== FULL API RESPONSE END =====");
     } catch (rapidApiError) {
       console.error("RapidAPI request failed:", rapidApiError.message);
     }
