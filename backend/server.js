@@ -4,6 +4,41 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 
+function extractMedia(apiData) {
+  let video = null;
+  let image = null;
+
+  // Direct fields
+  video = apiData?.video || apiData?.videoUrl || apiData?.video_url;
+  image = apiData?.image || apiData?.imageUrl || apiData?.image_url;
+
+  // Nested data
+  if (!video && apiData?.data) {
+    video = apiData.data.video || apiData.data.videoUrl;
+    image = apiData.data.image || apiData.data.imageUrl;
+  }
+
+  // Arrays
+  if (!video && apiData?.videos?.length) {
+    video = apiData.videos[0]?.url || apiData.videos[0];
+  }
+
+  if (!image && apiData?.images?.length) {
+    image = apiData.images[0]?.url || apiData.images[0];
+  }
+
+  // Apify specific
+  if (!video && apiData?.videoUrl) {
+    video = apiData.videoUrl;
+  }
+
+  if (!image && apiData?.imageUrl) {
+    image = apiData.imageUrl;
+  }
+
+  return { video, image };
+}
+
 async function fetchFromApify(url) {
   try {
     const token = process.env.APIFY_TOKEN || "token=process.env.APIFY_TOKEN";
@@ -15,11 +50,7 @@ async function fetchFromApify(url) {
     );
 
     const data = response.data?.[0];
-
-    return {
-      video: data?.videoUrl || null,
-      image: data?.imageUrl || null
-    };
+    return extractMedia(data);
   } catch (err) {
     console.error("Apify failed:", err.message);
     return null;
@@ -100,27 +131,10 @@ app.post('/api/download', async (req, res) => {
       console.error("RapidAPI request failed:", rapidApiError.message);
     }
 
-    // 5. Fix "Media not found" by deeply checking response JSON
-    let videoUrl = null;
-    let imageUrl = null;
+    // 5. Extract media using improved parsing
+    const media = extractMedia(apiData);
 
-    if (apiData.data) {
-        videoUrl = apiData.data.video || apiData.data.videoUrl || apiData.data.video_url || apiData.data.video_link;
-        imageUrl = apiData.data.image || apiData.data.imageUrl || apiData.data.image_url || apiData.data.image_link;
-    } else {
-        videoUrl = apiData.video || apiData.videoUrl || apiData.video_url || apiData.video_link;
-        imageUrl = apiData.image || apiData.imageUrl || apiData.image_url || apiData.image_link || apiData.thumbnail;
-    }
-
-    // Check nested arrays if standard fields are empty
-    if (!videoUrl && apiData.videos && apiData.videos.length > 0) {
-        videoUrl = apiData.videos[0].url || apiData.videos[0];
-    }
-    if (!imageUrl && apiData.images && apiData.images.length > 0) {
-        imageUrl = apiData.images[0].url || apiData.images[0];
-    }
-
-    if (!videoUrl && !imageUrl) {
+    if (!media.video && !media.image) {
         console.error("Media extraction failed or RapidAPI returned no data. Trying Apify fallback...");
         let fallback = await fetchFromApify(url);
 
@@ -134,16 +148,20 @@ app.post('/api/download', async (req, res) => {
           });
         }
         
-        return res.status(404).json({ success: false, error: "Media not found. Both primary and fallback APIs failed." });
+        console.log("Full API Response:", apiData);
+        return res.status(404).json({
+          success: false,
+          error: "Media not found. API returned unsupported format."
+        });
     }
 
     // 6. Ensure response matches frontend expectations
     return res.json({
       success: true,
-      video: videoUrl || null,
-      image: imageUrl || null,
+      video: media.video,
+      image: media.image,
       title: apiData.title || apiData.description || "Pinterest Media",
-      filename: videoUrl ? "video.mp4" : "image.jpg"
+      filename: media.video ? "video.mp4" : "image.jpg"
     });
 
   } catch (error) {
