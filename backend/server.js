@@ -209,6 +209,33 @@ app.get('/api/test', async (req, res) => {
   }
 });
 
+app.get('/api/file', async (req, res) => {
+  try {
+    const fileUrl = req.query.url;
+
+    if (!fileUrl) {
+      return res.status(400).send("No URL provided");
+    }
+
+    const axios = require('axios');
+
+    const response = await axios({
+      url: fileUrl,
+      method: 'GET',
+      responseType: 'stream'
+    });
+
+    res.setHeader('Content-Disposition', 'attachment; filename=download');
+    res.setHeader('Content-Type', response.headers['content-type']);
+
+    response.data.pipe(res);
+
+  } catch (error) {
+    console.error("Download proxy error:", error.message);
+    res.status(500).send("Download failed");
+  }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     if (process.env.RAPIDAPI_KEY) {

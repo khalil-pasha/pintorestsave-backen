@@ -95,37 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.textContent = '';
     }
 
-    // Download Button Redirect Prevention
-    document.addEventListener("click", async function(e) {
+    // Download Button Proxy Redirect
+    document.addEventListener("click", function(e) {
         if (e.target.classList.contains("download-btn")) {
             e.preventDefault();
-            const url = e.target.getAttribute("data-url");
-
-            try {
-                // Change text temporarily to indicate progress
-                const originalText = e.target.innerText;
-                e.target.innerText = "Downloading...";
-
-                const response = await fetch(url);
-                const blob = await response.blob();
-
-                const blobUrl = window.URL.createObjectURL(blob);
-
-                const a = document.createElement("a");
-                a.href = blobUrl;
-                a.download = "pinterest-media";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-
-                window.URL.revokeObjectURL(blobUrl);
-                e.target.innerText = originalText;
-
-            } catch (err) {
-                console.error(err);
-                alert("Download failed");
-                e.target.innerText = "Download Failed";
-            }
+            const mediaUrl = e.target.getAttribute("data-url");
+            window.location.href = `https://pintorestsave-backen.onrender.com/api/file?url=${encodeURIComponent(mediaUrl)}`;
         }
     });
 
