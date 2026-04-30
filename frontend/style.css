@@ -494,3 +494,9 @@ section {
     animation: spin 1s infinite linear; margin: 0 auto 10px;
 }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+#top-error-message {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 14px;
+}

@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingDiv = document.getElementById('loading');
     const resultSection = document.getElementById('result-section');
     const errorMessage = document.getElementById('error-message');
+    const topError = document.getElementById("top-error-message");
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -90,11 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function showError(msg) {
         errorMessage.textContent = msg;
         errorMessage.classList.remove('hidden');
+        topError.classList.remove("hidden");
     }
 
     function hideError() {
         errorMessage.classList.add('hidden');
         errorMessage.textContent = '';
+        topError.classList.add("hidden");
     }
 
     const backendUrl = "https://pintorestsave-backen.onrender.com";
