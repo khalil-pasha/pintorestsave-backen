@@ -51,22 +51,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const imageUrl = data.image || null;
 
             // Display result dynamically handling video vs image correctly
-            if (videoUrl) {
+            console.log("API Response:", data);
+            
+            if (data.video && data.video.includes(".mp4")) {
                 resultSection.innerHTML = `
-                    <video id="videoPreview" src="${videoUrl}" controls class="media-preview" autoplay style="display:block;"></video>
-                    <br>
-                    <a id="downloadBtn" href="${videoUrl}" download="${data.filename || "video.mp4"}" target="_blank" class="download-action-btn">Download Video</a>
+                    <video controls src="${data.video}" style="max-width:100%"></video>
+                    <a href="${data.video}" download="${data.filename || 'video.mp4'}">
+                        <button>Download Video</button>
+                    </a>
                 `;
                 resultSection.classList.remove('hidden');
             } else if (data.image) {
                 resultSection.innerHTML = `
-    <div class="result-card">
-      <img src="${data.image}" alt="Pinterest Image" style="width:100%; max-width:400px; border-radius:12px; margin-top:10px;" 
-           onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Preview+Not+Available';" />
-      <br/>
-      <a href="${data.image}" download="pinterest-image.jpg" class="download-btn">Download Image</a>
-    </div>
-  `;
+                    <img src="${data.image}" style="max-width:100%" />
+                    <a href="${data.image}" download="image.jpg">
+                        <button>Download Image</button>
+                    </a>
+                `;
                 resultSection.classList.remove('hidden');
             } else {
                 showError("Media not found!");
