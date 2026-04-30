@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="preview-right">
         <button class="download-btn" data-url="${mediaUrl}">
-            Download ${data.video ? "Video" : "Image"}
+            Download
         </button>
     </div>
 
