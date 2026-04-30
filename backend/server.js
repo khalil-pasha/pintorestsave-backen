@@ -177,6 +177,38 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../index.html'));
 });
 
+app.get('/api/test', async (req, res) => {
+  try {
+    const testUrl = req.query.url;
+
+    if (!testUrl) {
+      return res.json({ error: "Add ?url=PINTEREST_URL" });
+    }
+
+    console.log("TEST URL:", testUrl);
+
+    const encodedUrl = encodeURIComponent(testUrl);
+
+    const response = await axios.get(
+      `https://pinterest-video-and-image-downloader.p.rapidapi.com/pinterest?url=${encodedUrl}`,
+      {
+        headers: {
+          "x-rapidapi-key": process.env.RAPIDAPI_KEY,
+          "x-rapidapi-host": "pinterest-video-and-image-downloader.p.rapidapi.com"
+        }
+      }
+    );
+
+    console.log("RAW API DATA:", JSON.stringify(response.data, null, 2));
+
+    res.json(response.data);
+
+  } catch (err) {
+    console.error("TEST ERROR:", err.response?.data || err.message);
+    res.json({ error: err.response?.data || err.message });
+  }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     if (process.env.RAPIDAPI_KEY) {
