@@ -56,19 +56,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.video && data.video.includes(".mp4") || data.image) {
                 resultSection.innerHTML = `
 <div class="preview-container">
-    
+
     <div class="preview-left">
-        ${data.video && data.video.includes(".mp4") ? `
-            <video src="${data.video}" controls autoplay muted loop playsinline class="media-preview"></video>
-        ` : `
-            <img src="${data.image}" class="media-preview"/>
-        `}
+        ${
+          data.video && data.video.includes(".mp4")
+            ? `<video src="${data.video}" autoplay muted loop playsinline controls class="media-preview"></video>`
+            : `<img src="${data.image}" class="media-preview"/>`
+        }
     </div>
 
     <div class="preview-right">
-        <a href="${data.video && data.video.includes(".mp4") ? data.video : data.image}" download target="_self" class="download-btn">
-            Download ${data.video && data.video.includes(".mp4") ? "Video" : "Image"}
-        </a>
+        <button class="download-btn" data-url="${data.video || data.image}">
+            Download ${data.video ? "Video" : "Image"}
+        </button>
     </div>
 
 </div>
@@ -96,18 +96,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Download Button Redirect Prevention
-    document.addEventListener("click", function(e) {
+    document.addEventListener("click", async function(e) {
         if (e.target.classList.contains("download-btn")) {
             e.preventDefault();
+            const url = e.target.getAttribute("data-url");
 
-            const url = e.target.getAttribute("href");
+            try {
+                // Change text temporarily to indicate progress
+                const originalText = e.target.innerText;
+                e.target.innerText = "Downloading...";
 
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+                const response = await fetch(url);
+                const blob = await response.blob();
+
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = blobUrl;
+                a.download = "pinterest-media";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                window.URL.revokeObjectURL(blobUrl);
+                e.target.innerText = originalText;
+
+            } catch (err) {
+                console.error(err);
+                alert("Download failed");
+                e.target.innerText = "Download Failed";
+            }
         }
     });
 
