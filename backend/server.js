@@ -221,13 +221,17 @@ app.get('/api/file', async (req, res) => {
       url: fileUrl,
       method: 'GET',
       responseType: 'stream',
+      maxRedirects: 5,
+      timeout: 15000,
       headers: {
-        'User-Agent': 'Mozilla/5.0',
-        'Referer': 'https://www.pinterest.com/'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Referer': 'https://www.pinterest.com/',
+        'Accept': '*/*',
+        'Connection': 'keep-alive'
       }
     });
 
-    const contentType = response.headers['content-type'];
+    const contentType = response.headers['content-type'] || 'application/octet-stream';
 
     let extension = 'file';
 
@@ -243,7 +247,12 @@ app.get('/api/file', async (req, res) => {
     );
     res.setHeader('Content-Type', contentType);
 
-    response.data.pipe(res);
+    try {
+      response.data.pipe(res);
+    } catch (err) {
+      console.error("Stream failed, fallback redirect");
+      return res.redirect(fileUrl);
+    }
 
   } catch (error) {
     console.error("Proxy Download Error:", error.message);
