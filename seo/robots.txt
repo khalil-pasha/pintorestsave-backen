@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /api/
 
-Sitemap: https://your-domain.com/seo/sitemap.xml
+Sitemap: https://pintorestsave.com/sitemap.xml
