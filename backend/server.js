@@ -41,7 +41,8 @@ function extractMedia(apiData) {
 
 async function fetchFromApify(url) {
   try {
-    const token = process.env.APIFY_TOKEN || "token=process.env.APIFY_TOKEN";
+    const token = process.env.APIFY_TOKEN;
+    if (!token) return null;
     const response = await axios.post(
       `https://api.apify.com/v2/acts/igview-owner~pinterest-downloader/run-sync-get-dataset-items?token=${token}`,
       {
@@ -172,41 +173,13 @@ app.post('/api/download', async (req, res) => {
   }
 });
 
+// robots.txt & sitemap at root (SEO)
+app.get('/robots.txt', (req, res) => res.sendFile(path.join(__dirname, '../seo/robots.txt')));
+app.get('/sitemap.xml', (req, res) => res.sendFile(path.join(__dirname, '../sitemap.xml')));
+
 // Serve index.html for root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../index.html'));
-});
-
-app.get('/api/test', async (req, res) => {
-  try {
-    const testUrl = req.query.url;
-
-    if (!testUrl) {
-      return res.json({ error: "Add ?url=PINTEREST_URL" });
-    }
-
-    console.log("TEST URL:", testUrl);
-
-    const encodedUrl = encodeURIComponent(testUrl);
-
-    const response = await axios.get(
-      `https://pinterest-video-and-image-downloader.p.rapidapi.com/pinterest?url=${encodedUrl}`,
-      {
-        headers: {
-          "x-rapidapi-key": process.env.RAPIDAPI_KEY,
-          "x-rapidapi-host": "pinterest-video-and-image-downloader.p.rapidapi.com"
-        }
-      }
-    );
-
-    console.log("RAW API DATA:", JSON.stringify(response.data, null, 2));
-
-    res.json(response.data);
-
-  } catch (err) {
-    console.error("TEST ERROR:", err.response?.data || err.message);
-    res.json({ error: err.response?.data || err.message });
-  }
 });
 
 app.get('/api/file', async (req, res) => {
@@ -215,6 +188,20 @@ app.get('/api/file', async (req, res) => {
 
     if (!fileUrl) {
       return res.status(400).send("No URL provided");
+    }
+
+    // Security: only allow Pinterest media hosts (prevents open-proxy abuse)
+    let parsed;
+    try {
+      parsed = new URL(fileUrl);
+    } catch (e) {
+      return res.status(400).send("Invalid URL");
+    }
+    const ALLOWED_HOSTS = ['pinimg.com', 'pinterest.com'];
+    const hostOk = parsed.protocol === 'https:' &&
+      ALLOWED_HOSTS.some(h => parsed.hostname === h || parsed.hostname.endsWith('.' + h));
+    if (!hostOk) {
+      return res.status(403).send("Only Pinterest media can be downloaded");
     }
 
     const response = await axios({
